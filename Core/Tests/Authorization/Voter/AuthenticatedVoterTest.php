@@ -11,18 +11,19 @@
 
 namespace Symfony\Component\Security\Core\Tests\Authorization\Voter;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\AuthenticationTrustResolver;
 use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
-class AuthenticatedVoterTest extends \PHPUnit_Framework_TestCase
+class AuthenticatedVoterTest extends TestCase
 {
     /**
      * @dataProvider getVoteTests
      */
     public function testVote($authenticated, $attributes, $expected)
     {
-        $voter = new AuthenticatedVoter($this->getResolver());
+        $voter = new AuthenticatedVoter(new AuthenticationTrustResolver());
 
         $this->assertSame($expected, $voter->vote($this->getToken($authenticated), null, $attributes));
     }
@@ -51,22 +52,14 @@ class AuthenticatedVoterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    protected function getResolver()
-    {
-        return new AuthenticationTrustResolver(
-            'Symfony\\Component\\Security\\Core\\Authentication\\Token\\AnonymousToken',
-            'Symfony\\Component\\Security\\Core\\Authentication\\Token\\RememberMeToken'
-        );
-    }
-
     protected function getToken($authenticated)
     {
         if ('fully' === $authenticated) {
-            return $this->getMock('Symfony\Component\Security\Core\Authentication\Token\TokenInterface');
+            return $this->getMockBuilder('Symfony\Component\Security\Core\Authentication\Token\TokenInterface')->getMock();
         } elseif ('remembered' === $authenticated) {
-            return $this->getMock('Symfony\Component\Security\Core\Authentication\Token\RememberMeToken', array('setPersistent'), array(), '', false);
+            return $this->getMockBuilder('Symfony\Component\Security\Core\Authentication\Token\RememberMeToken')->setMethods(array('setPersistent'))->disableOriginalConstructor()->getMock();
         } else {
-            return $this->getMock('Symfony\Component\Security\Core\Authentication\Token\AnonymousToken', null, array('', ''));
+            return $this->getMockBuilder('Symfony\Component\Security\Core\Authentication\Token\AnonymousToken')->setConstructorArgs(array('', ''))->getMock();
         }
     }
 }

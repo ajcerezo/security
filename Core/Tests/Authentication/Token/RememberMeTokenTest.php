@@ -11,10 +11,11 @@
 
 namespace Symfony\Component\Security\Core\Tests\Authentication\Token;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Core\Role\Role;
 
-class RememberMeTokenTest extends \PHPUnit_Framework_TestCase
+class RememberMeTokenTest extends TestCase
 {
     public function testConstructor()
     {
@@ -31,18 +32,6 @@ class RememberMeTokenTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testConstructorSecretCannotBeNull()
-    {
-        new RememberMeToken(
-            $this->getUser(),
-            null,
-            null
-        );
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testConstructorSecretCannotBeEmptyString()
     {
         new RememberMeToken(
@@ -54,9 +43,9 @@ class RememberMeTokenTest extends \PHPUnit_Framework_TestCase
 
     protected function getUser($roles = array('ROLE_FOO'))
     {
-        $user = $this->getMock('Symfony\Component\Security\Core\User\UserInterface');
+        $user = $this->getMockBuilder('Symfony\Component\Security\Core\User\UserInterface')->getMock();
         $user
-            ->expects($this->once())
+            ->expects($this->any())
             ->method('getRoles')
             ->will($this->returnValue($roles))
         ;

@@ -61,8 +61,6 @@ class EncoderFactory implements EncoderFactoryInterface
     /**
      * Creates the actual encoder instance.
      *
-     * @param array $config
-     *
      * @return PasswordEncoderInterface
      *
      * @throws \InvalidArgumentException
@@ -108,6 +106,16 @@ class EncoderFactory implements EncoderFactoryInterface
                 return array(
                     'class' => BCryptPasswordEncoder::class,
                     'arguments' => array($config['cost']),
+                );
+
+            case 'argon2i':
+                return array(
+                    'class' => Argon2iPasswordEncoder::class,
+                    'arguments' => array(
+                        $config['memory_cost'],
+                        $config['time_cost'],
+                        $config['threads'],
+                    ),
                 );
         }
 

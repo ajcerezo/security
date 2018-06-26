@@ -12,6 +12,7 @@
 namespace Symfony\Component\Security\Core\Authorization;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
 /**
  * Decorates the original AccessDecisionManager class to log information
@@ -21,7 +22,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
  *
  * @internal
  */
-class DebugAccessDecisionManager implements AccessDecisionManagerInterface
+class TraceableAccessDecisionManager implements AccessDecisionManagerInterface
 {
     private $manager;
     private $strategy;
@@ -33,10 +34,13 @@ class DebugAccessDecisionManager implements AccessDecisionManagerInterface
         $this->manager = $manager;
 
         if ($this->manager instanceof AccessDecisionManager) {
-            // The strategy is stored in a private property of the decorated service
+            // The strategy and voters are stored in a private properties of the decorated service
             $reflection = new \ReflectionProperty(AccessDecisionManager::class, 'strategy');
             $reflection->setAccessible(true);
             $this->strategy = $reflection->getValue($manager);
+            $reflection = new \ReflectionProperty(AccessDecisionManager::class, 'voters');
+            $reflection->setAccessible(true);
+            $this->voters = $reflection->getValue($manager);
         }
     }
 
@@ -57,19 +61,6 @@ class DebugAccessDecisionManager implements AccessDecisionManagerInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setVoters(array $voters)
-    {
-        if (!method_exists($this->manager, 'setVoters')) {
-            return;
-        }
-
-        $this->voters = $voters;
-        $this->manager->setVoters($voters);
-    }
-
-    /**
      * @return string
      */
     public function getStrategy()
@@ -81,7 +72,7 @@ class DebugAccessDecisionManager implements AccessDecisionManagerInterface
     }
 
     /**
-     * @return array
+     * @return iterable|VoterInterface[]
      */
     public function getVoters()
     {
@@ -96,3 +87,5 @@ class DebugAccessDecisionManager implements AccessDecisionManagerInterface
         return $this->decisionLog;
     }
 }
+
+class_alias(TraceableAccessDecisionManager::class, DebugAccessDecisionManager::class);

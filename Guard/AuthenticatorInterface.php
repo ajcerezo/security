@@ -28,26 +28,33 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
  * one location.
  *
  * @author Ryan Weaver <ryan@knpuniversity.com>
+ * @author Amaury Leroux de Lens <amaury@lerouxdelens.com>
  */
-interface GuardAuthenticatorInterface extends AuthenticationEntryPointInterface
+interface AuthenticatorInterface extends AuthenticationEntryPointInterface
 {
     /**
+     * Does the authenticator support the given Request?
+     *
+     * If this returns false, the authenticator will be skipped.
+     *
+     * @param Request $request
+     *
+     * @return bool
+     */
+    public function supports(Request $request);
+
+    /**
      * Get the authentication credentials from the request and return them
-     * as any type (e.g. an associate array). If you return null, authentication
-     * will be skipped.
+     * as any type (e.g. an associate array).
      *
      * Whatever value you return here will be passed to getUser() and checkCredentials()
      *
      * For example, for a form login, you might:
-     * 
-     *      if ($request->request->has('_username')) {
-     *          return array(
-     *              'username' => $request->request->get('_username'),
-     *              'password' => $request->request->get('_password'),
-     *          );
-     *      } else {
-     *          return;
-     *      }
+     *
+     *      return array(
+     *          'username' => $request->request->get('_username'),
+     *          'password' => $request->request->get('_password'),
+     *      );
      *
      * Or for an API token that's on a header, you might use:
      *
@@ -55,7 +62,9 @@ interface GuardAuthenticatorInterface extends AuthenticationEntryPointInterface
      *
      * @param Request $request
      *
-     * @return mixed|null
+     * @return mixed Any non-null value
+     *
+     * @throws \UnexpectedValueException If null is returned
      */
     public function getCredentials(Request $request);
 
@@ -87,7 +96,7 @@ interface GuardAuthenticatorInterface extends AuthenticationEntryPointInterface
      *
      * @param mixed         $credentials
      * @param UserInterface $user
-     * 
+     *
      * @return bool
      *
      * @throws AuthenticationException
@@ -153,6 +162,7 @@ interface GuardAuthenticatorInterface extends AuthenticationEntryPointInterface
      *      done by having a _remember_me checkbox in your form, but
      *      can be configured by the "always_remember_me" and "remember_me_parameter"
      *      parameters under the "remember_me" firewall key
+     *  D) The onAuthenticationSuccess method returns a Response object
      *
      * @return bool
      */
